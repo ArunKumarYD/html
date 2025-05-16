@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UVPL Volleyball League</title>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+  <div class="max-w-5xl mx-auto py-6 px-4">
+    <h1 class="text-3xl font-bold text-center mb-6">United Creation Volleyball Premier League (UVPL)</h1>
+
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-2">Match Schedule</h2>
+      <div id="schedule" class="bg-white p-4 rounded shadow space-y-2"></div>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-2">Points Table</h2>
+      <div id="points" class="bg-white p-4 rounded shadow space-y-2"></div>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold mb-2 text-red-600">Live Match</h2>
+      <div id="liveMatch" class="bg-yellow-100 p-4 rounded shadow text-center font-bold"></div>
+    </section>
+
+    <section class="flex justify-center gap-4">
+      <a href="https://arunkumaryd.github.io/referee-login-app/" target="_blank"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Login</a>
+      <a href="gallery.html" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Gallery</a>
+    </section>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlZ93x6I3_nGkzHgVjHQJpiRQFdfFYrVw",
+      authDomain: "uvpl.firebaseapp.com",
+      databaseURL: "https://uvpl-default-rtdb.firebaseio.com",
+      projectId: "uvpl",
+      storageBucket: "uvpl.appspot.com",
+      messagingSenderId: "309334886926",
+      appId: "1:309334886926:web:54bbf5cfd58f2901f93d6a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function renderSchedule(data) {
+      const scheduleDiv = document.getElementById('schedule');
+      scheduleDiv.innerHTML = '';
+      Object.values(data).forEach(match => {
+        scheduleDiv.innerHTML += `<div class="border p-2">${match.date} | ${match.time} - ${match.teamA} vs ${match.teamB}</div>`;
+      });
+    }
+
+    function renderPointsTable(data) {
+      const pointsDiv = document.getElementById('points');
+      pointsDiv.innerHTML = '';
+      Object.values(data).sort((a,b)=>b.points-a.points).forEach(team => {
+        pointsDiv.innerHTML += `<div class="border p-2 flex justify-between"><span>${team.name}</span><span>${team.points} pts</span></div>`;
+      });
+    }
+
+    function renderLiveMatch(data) {
+      const liveDiv = document.getElementById('liveMatch');
+      if (!data || !data.status || data.status !== "live") {
+        liveDiv.innerText = "No live match currently.";
+        return;
+      }
+      liveDiv.innerText = `${data.teamA} vs ${data.teamB} | Set 1: ${data.set1A} - ${data.set1B}, Set 2: ${data.set2A} - ${data.set2B}`;
+    }
+
+    db.ref('schedule').on('value', snapshot => {
+      if (snapshot.exists()) renderSchedule(snapshot.val());
+    });
+
+    db.ref('points').on('value', snapshot => {
+      if (snapshot.exists()) renderPointsTable(snapshot.val());
+    });
+
+    db.ref('liveMatch').on('value', snapshot => {
+      if (snapshot.exists()) renderLiveMatch(snapshot.val());
+    });
+  </script>
+</body>
+
+</html>
